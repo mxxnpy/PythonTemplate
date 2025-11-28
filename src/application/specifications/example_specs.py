@@ -75,4 +75,3 @@ class ExampleNotDeletedSpec(Specification[Example]):
 def example_can_be_modified() -> Specification[Example]:
     """exemplo pode ser modificado se ativo e nao deletado"""
     return ExampleActiveSpec() & ExampleNotDeletedSpec()
-

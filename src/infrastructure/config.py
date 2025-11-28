@@ -42,4 +42,3 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """retorna configuracoes cacheadas"""
     return Settings()
-

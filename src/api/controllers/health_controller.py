@@ -24,4 +24,3 @@ async def health() -> dict[str, str]:
 async def ready() -> dict[str, str]:
     """verifica se a api esta pronta"""
     return {"status": "ready"}
-

@@ -39,4 +39,3 @@ class Example(AuditableEntity[UUID]):
     @property
     def is_active(self) -> bool:
         return self.status == Status.ACTIVE
-

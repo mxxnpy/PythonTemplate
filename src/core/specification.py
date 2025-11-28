@@ -195,4 +195,3 @@ class InRangeSpec(Specification[int | float]):
     @property
     def error_message(self) -> str:
         return f"{self._field_name} deve estar entre {self._min} e {self._max}"
-

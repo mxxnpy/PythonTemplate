@@ -12,4 +12,3 @@ class Status(str, Enum):
     INACTIVE = "inactive"
     PENDING = "pending"
     DELETED = "deleted"
-
