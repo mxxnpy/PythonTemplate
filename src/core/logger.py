@@ -138,3 +138,4 @@ def critical(msg: str, *args, **kwargs) -> None:
 
 def exception(msg: str, *args, **kwargs) -> None:
     logger.exception(msg, *args, **kwargs)
+    

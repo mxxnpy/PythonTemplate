@@ -1,0 +1,2349 @@
+---
+alwaysApply: true
+---
+# 🎯 AYU CODE STYLE - Programação Minimalista de Alta Performance
+
+## Filosofia Central
+
+Este guia define um estilo **único** de programação que prioriza:
+
+```
+CLAREZA > CLEVERNESS
+MENOS > MAIS
+QUESTIONAR > ASSUMIR
+ENTENDER > IMPLEMENTAR
+PERFORMANCE > CONVENIÊNCIA
+LINGUAGEM > FRAMEWORK
+CIRÚRGICO > REESCREVER
+```
+
+---
+
+# 🔒 REGRAS IMUTÁVEIS
+
+## Linguagem > Framework
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  LINGUAGENS SUPORTADAS: C# | TypeScript | Python           │
+│                                                             │
+│  Framework muda. Linguagem permanece.                       │
+│  Nós mandamos no framework. Não o contrário.               │
+│  Domine o cru. O framework é só uma ferramenta.            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Princípios
+
+1. **Mesma lógica, mesma arquitetura** em todas as linguagens
+2. **Performance primeiro** - respeitando particularidades de cada linguagem
+3. **Estilo único** - foge do genérico, complexo e confuso
+4. **Código limpo no core** - framework é wrapper, não dono
+
+---
+
+## Alterações Cirúrgicas - Nunca Reinvente a Roda
+
+### SEMPRE
+
+```markdown
+□ Altere SOMENTE o necessário
+□ Use o que JÁ EXISTE no projeto/linguagem
+□ Reutilize patterns já implementados
+□ Estenda ao invés de recriar
+□ Prefira stdlib/builtins antes de bibliotecas
+□ Se funciona e é performático, não mexa
+```
+
+### NUNCA
+
+```markdown
+□ Reescreva código funcionando "para ficar melhor"
+□ Crie abstração para um único uso
+□ Adicione dependência quando stdlib resolve
+□ Mude padrão estabelecido sem necessidade
+□ Faça refactor junto com feature
+□ Implemente o que já existe na linguagem
+```
+
+### Antes de Criar Algo Novo
+
+```
+1. Existe na stdlib?           → USE
+2. Existe no projeto?          → REUTILIZE  
+3. Existe pattern conhecido?   → ADAPTE
+4. Nenhuma das anteriores?     → CRIE (mínimo necessário)
+```
+
+---
+
+## Comentários - Direto ao Ponto
+
+### Regra de Ouro
+
+```
+DIGA O QUE FAZ. SÓ ISSO. SEM ENROLAÇÃO.
+```
+
+### Formato Padrão
+
+```csharp
+// busca veiculo pelo id
+// valida se o veiculo ta ativo
+// gera o pdf do dossie
+// concatena os arquivos em um so
+// deleta o documento do storage
+// retorna vazio se nao achar
+// essa funcao nao faz nada ainda
+```
+
+### C# - Exemplos
+
+```csharp
+// busca veiculo pelo id e retorna Option
+public Option<Veiculo> GetById(int id)
+{
+    return Option.FromNullable(_context.Veiculos.Find(id));
+}
+
+// valida se pode gerar dossie (ativo + com documento)
+public Either<ErrorResult, Veiculo> ValidarParaDossie(Veiculo v)
+{
+    var spec = new VeiculoAtivoSpec().And(new VeiculoComDocumentoSpec());
+    return spec.Validate(v);
+}
+
+// concatena lista de pdfs em um arquivo so
+public async Task<Either<ErrorResult, byte[]>> ConcatenarPdfs(List<string> urls)
+{
+    // ...
+}
+
+// deleta documento e retorna Unit se deu certo
+public Either<ErrorResult, Unit> Deletar(int id)
+{
+    // ...
+}
+```
+
+### Python - Exemplos
+
+```python
+# busca veiculo pelo id
+async def get_by_id(self, id: int) -> Option[Veiculo]:
+    return from_nullable(await self._repo.find(id))
+
+# valida se veiculo ta ativo e tem crlv
+def validar_para_dossie(self, v: Veiculo) -> Either[ErrorResult, Veiculo]:
+    spec = VeiculoAtivoSpec().and_(VeiculoComDocumentoSpec())
+    return spec.validate(v)
+
+# gera pdf a partir do html
+async def gerar_pdf(self, html: str) -> Either[ErrorResult, bytes]:
+    # ...
+
+# nao faz nada ainda, so retorna vazio
+def placeholder(self) -> None:
+    pass
+```
+
+### TypeScript - Exemplos
+
+```typescript
+// busca usuario pelo id
+const getById = async (id: number): Promise<Option<User>> => {
+  return fromNullable(await repo.find(id));
+};
+
+// valida se email ta no formato certo
+const validarEmail = (email: string): Either<string, string> => {
+  return email.includes('@') ? Right(email) : Left('email invalido');
+};
+
+// faz upload do arquivo pro s3
+const upload = async (file: File): Promise<Either<Error, string>> => {
+  // ...
+};
+
+// ainda nao implementado
+const TODO = (): void => {
+  throw new Error('nao implementado');
+};
+```
+
+### O que NÃO fazer
+
+```csharp
+// ❌ ERRADO - Muito formal
+/// <summary>
+/// This method is responsible for retrieving a vehicle entity from the database
+/// using the provided identifier parameter and returning it wrapped in an Option monad.
+/// </summary>
+/// <param name="id">The unique identifier of the vehicle to retrieve</param>
+/// <returns>An Option containing the vehicle if found, None otherwise</returns>
+
+// ✅ CORRETO - Direto
+// busca veiculo pelo id
+```
+
+```csharp
+// ❌ ERRADO - Obvio demais
+// incrementa i em 1
+i++;
+
+// ✅ CORRETO - Nao precisa comentar o obvio
+i++;
+```
+
+```csharp
+// ❌ ERRADO - Explicando demais
+// Esta função itera sobre a lista de URLs fornecidas, faz download de cada arquivo,
+// converte para bytes, concatena todos em um único array e retorna o resultado
+
+// ✅ CORRETO - Resumido
+// junta todos os pdfs das urls em um arquivo so
+```
+
+### Quando Comentar
+
+```markdown
+✅ COMENTAR
+□ Inicio de funcao/metodo (o que faz)
+□ Logica nao obvia (por que ta fazendo assim)
+□ TODO/FIXME (o que falta fazer)
+□ Workaround (por que precisou dessa gambiarra)
+□ Getters/setters simples
+
+
+❌ NAO COMENTAR
+□ Codigo obvio (i++, return x, etc)
+□ Imports
+□ Fechamento de blocos (} // end if)
+```
+
+### Padrão de TODO/FIXME
+
+```csharp
+// TODO: implementar cache aqui
+// FIXME: ta lento quando tem mais de 100 itens
+// HACK: precisou disso pq a api externa retorna formato errado
+// NOTE: esse timeout de 30s eh por causa do processamento de pdf grande
+```
+
+---
+
+# 🧠 MINDSET: Os 4 Pilares
+
+## 1. ASK WORTHY - Pergunte Antes de Codar
+
+**NUNCA comece a implementar sem antes:**
+
+### Checklist Obrigatório
+
+```markdown
+□ Qual problema exato estou resolvendo?
+□ Já existe algo similar no projeto?
+□ Essa é a camada correta para esta lógica?
+□ Quem vai consumir isso? Como?
+□ Qual o impacto se isso falhar?
+□ Preciso disso agora ou é over-engineering?
+□ Qual a complexidade de tempo/espaço?
+□ Isso escala para 10x, 100x os dados atuais?
+```
+
+### Perguntas Poderosas
+
+| Antes de... | Pergunte... |
+|----|----|
+| Criar classe nova | "Posso estender uma existente?" |
+| Adicionar dependência | "O que já tenho resolve?" |
+| Criar abstração | "Tenho 3+ casos de uso reais?" |
+| Adicionar parâmetro | "Posso derivar de dados existentes?" |
+| Criar exceção custom | "Either/Option não resolve?" |
+| Adicionar comentário | "O código não está claro o suficiente?" |
+| Fazer loop | "Posso usar LINQ/comprehension?" |
+| Chamar API N vezes | "Posso fazer batch/bulk?" |
+| Implementar algo | "Já existe na stdlib/projeto?" |
+| Reescrever código | "Está quebrado ou só 'feio'?" |
+| Adicionar biblioteca | "A linguagem já tem isso?" |
+
+---
+
+## 2. INDEX FIRST - Mapeie Antes de Mexer
+
+**NUNCA altere código sem antes:**
+
+### Navegação Obrigatória
+
+```markdown
+□ Li o arquivo inteiro, não só o trecho
+□ Identifiquei quem chama este código
+□ Identifiquei o que este código chama
+□ Entendi o fluxo de dados (entrada → saída)
+□ Encontrei os testes relacionados
+□ Verifiquei padrões similares no projeto
+□ Identifiquei pontos de cache existentes
+□ Mapeei queries ao banco de dados
+```
+
+### Mapa Mental do Código
+
+```
+CONTROLLER → SERVICE → HANDLER → REPOSITORY
+     ↓           ↓         ↓          ↓
+  Valida     Orquestra   Executa   Persiste
+  Request    Fluxo       Lógica    Dados
+```
+
+---
+
+## 3. KISS - Keep It Stupidly Simple
+
+### Regra dos 3
+
+- **3 parâmetros** máximo por método
+- **3 níveis** máximo de indentação
+- **3 responsabilidades** máximo por classe
+- **3 dependências** idealmente por handler
+
+---
+
+## 4. SOLID Minimalista
+
+### S - Single Responsibility
+```csharp
+// ✅ UMA RESPONSABILIDADE
+public class CriarPedidoHandler : IRequestHandler<CriarPedidoCommand, Result> { }
+public class ValidarPedidoSpec : Specification<Pedido> { }
+```
+
+### O - Open/Closed
+```csharp
+// ✅ Estenda via composição
+var novaRegra = new VeiculoAtivoSpec().And(new MinhaNovaRegraSpec());
+```
+
+### L - Liskov
+```csharp
+// ✅ Qualquer implementação funciona igual
+public interface IRepository<T> { Option<T> GetById(int id); }
+```
+
+### I - Interface Segregation
+```csharp
+// ✅ INTERFACES FOCADAS
+public interface ILeitor<T> { Option<T> GetById(int id); }
+public interface IEscritor<T> { Either<ErrorResult, Unit> Save(T entity); }
+```
+
+### D - Dependency Inversion
+```csharp
+// ✅ Dependa de abstrações
+private readonly IStorageService _storage;
+```
+
+---
+
+# ⚡ PERFORMANCE: Código Rápido por Design
+
+## Princípios de Performance
+
+```
+1. MEASURE FIRST    → Profile antes de otimizar
+2. LAZY LOADING     → Carregue só quando precisar
+3. BATCH OPERATIONS → Agrupe operações similares
+4. CACHE SMARTLY    → Cache no nível certo
+5. ASYNC ALL THE WAY → Nunca bloqueie threads
+```
+
+## Organização: Por LINGUAGEM, Não Por Framework
+
+```
+Este guia é organizado por LINGUAGEM:
+├── C#         → .NET, ASP.NET Core, Entity Framework (qualquer versão)
+├── TypeScript → React, Node, Next, Angular (qualquer framework)
+└── Python     → FastAPI, Django, Flask (qualquer framework)
+
+Os patterns são da LINGUAGEM. O framework só implementa.
+Quando o framework mudar, a lógica permanece.
+```
+
+---
+
+## 🔷 C# - Performance Máxima
+
+### Memory & Allocations
+
+```csharp
+// ❌ LENTO - Aloca novo array a cada iteração
+foreach (var item in items)
+{
+    var result = items.Where(x => x.Id == item.ParentId).ToList();
+}
+
+// ✅ RÁPIDO - Lookup O(1) com dicionário
+var lookup = items.ToLookup(x => x.ParentId);
+foreach (var item in items)
+{
+    var result = lookup[item.Id];
+}
+```
+
+```csharp
+// ❌ LENTO - String concatenation em loop
+string result = "";
+foreach (var s in strings)
+    result += s;
+
+// ✅ RÁPIDO - StringBuilder
+var sb = new StringBuilder();
+foreach (var s in strings)
+    sb.Append(s);
+```
+
+```csharp
+// ❌ LENTO - Boxing de value types
+object boxed = 42;
+
+// ✅ RÁPIDO - Generics evitam boxing
+T Process<T>(T value) where T : struct => value;
+```
+
+### Async/Await Otimizado
+
+```csharp
+// ❌ LENTO - Awaits sequenciais
+var a = await GetAAsync();
+var b = await GetBAsync();
+var c = await GetCAsync();
+
+// ✅ RÁPIDO - Parallel quando independentes
+var (a, b, c) = await (GetAAsync(), GetBAsync(), GetCAsync());
+
+// Extensão para tuple await
+public static class TaskExtensions
+{
+    public static async Task<(T1, T2, T3)> WhenAll<T1, T2, T3>(
+        this (Task<T1>, Task<T2>, Task<T3>) tasks)
+    {
+        await Task.WhenAll(tasks.Item1, tasks.Item2, tasks.Item3);
+        return (tasks.Item1.Result, tasks.Item2.Result, tasks.Item3.Result);
+    }
+}
+```
+
+```csharp
+// ❌ LENTO - ConfigureAwait sem necessidade em ASP.NET Core
+await Task.Delay(100).ConfigureAwait(false);
+
+// ✅ RÁPIDO - ASP.NET Core não precisa
+await Task.Delay(100);
+
+// ✅ MELHOR - ValueTask para hot paths
+public ValueTask<int> GetCachedValueAsync()
+{
+    if (_cache.TryGetValue(key, out var value))
+        return ValueTask.FromResult(value);
+    return new ValueTask<int>(LoadFromDbAsync());
+}
+```
+
+### LINQ Otimizado
+
+```csharp
+// ❌ LENTO - Múltiplas enumerações
+var count = items.Count();
+var first = items.First();
+var any = items.Any();
+
+// ✅ RÁPIDO - Enumera uma vez
+var list = items.ToList();
+var count = list.Count;
+var first = list[0];
+var any = count > 0;
+```
+
+```csharp
+// ❌ LENTO - Where + First
+var item = items.Where(x => x.Id == id).FirstOrDefault();
+
+// ✅ RÁPIDO - FirstOrDefault com predicado
+var item = items.FirstOrDefault(x => x.Id == id);
+```
+
+```csharp
+// ❌ LENTO - OrderBy + First para encontrar max
+var max = items.OrderByDescending(x => x.Value).First();
+
+// ✅ RÁPIDO - MaxBy (single pass)
+var max = items.MaxBy(x => x.Value);
+```
+
+### Database Performance
+
+```csharp
+// ❌ LENTO - N+1 Query Problem
+var pedidos = await _context.Pedidos.ToListAsync();
+foreach (var p in pedidos)
+{
+    var itens = await _context.Itens.Where(i => i.PedidoId == p.Id).ToListAsync();
+}
+
+// ✅ RÁPIDO - Include (Eager Loading)
+var pedidos = await _context.Pedidos
+    .Include(p => p.Itens)
+    .ToListAsync();
+
+// ✅ MAIS RÁPIDO - Projection (só campos necessários)
+var pedidos = await _context.Pedidos
+    .Select(p => new PedidoDto
+    {
+        Id = p.Id,
+        Total = p.Itens.Sum(i => i.Valor)
+    })
+    .ToListAsync();
+```
+
+```csharp
+// ❌ LENTO - Tracking desnecessário para leitura
+var items = await _context.Items.ToListAsync();
+
+// ✅ RÁPIDO - AsNoTracking para queries read-only
+var items = await _context.Items.AsNoTracking().ToListAsync();
+```
+
+```csharp
+// ❌ LENTO - SaveChanges por item
+foreach (var item in items)
+{
+    _context.Add(item);
+    await _context.SaveChangesAsync();
+}
+
+// ✅ RÁPIDO - Batch insert
+_context.AddRange(items);
+await _context.SaveChangesAsync();
+
+// ✅ MAIS RÁPIDO - BulkInsert para grandes volumes
+await _context.BulkInsertAsync(items);
+```
+
+### Caching Inteligente
+
+```csharp
+// ✅ Cache com padrão correto
+public async Task<T> GetOrCreateAsync<T>(string key, Func<Task<T>> factory, TimeSpan expiry)
+{
+    if (_cache.TryGetValue(key, out T cached))
+        return cached;
+
+    var value = await factory();
+    
+    _cache.Set(key, value, new MemoryCacheEntryOptions
+    {
+        AbsoluteExpirationRelativeToNow = expiry,
+        Size = 1
+    });
+    
+    return value;
+}
+
+// ✅ Cache distribuído com Redis
+public async Task<Either<ErrorResult, T>> GetOrFetchAsync<T>(
+    string key, 
+    Func<Task<Either<ErrorResult, T>>> fetch,
+    TimeSpan expiry)
+{
+    var cached = await _redis.StringGetAsync(key);
+    if (cached.HasValue)
+        return Either.Right<ErrorResult, T>(JsonSerializer.Deserialize<T>(cached!));
+
+    var result = await fetch();
+    
+    result.Switch(
+        left: _ => { },
+        right: value => _redis.StringSet(key, JsonSerializer.Serialize(value), expiry)
+    );
+    
+    return result;
+}
+```
+
+---
+
+# 🎨 PADRÕES FUNCIONAIS OBRIGATÓRIOS
+
+> Estes padrões são implementados em C#, Python e TypeScript. Mesma lógica, sintaxe da linguagem.
+
+---
+
+## 🔷 C# - Padrões Funcionais
+
+### 1. Either Monad - Sucesso ou Erro
+
+### O que é?
+O Either é um padrão de programação funcional que representa um valor que pode ser uma de duas coisas:
+- **Left** → Convencionalmente representa erro/falha
+- **Right** → Convencionalmente representa sucesso
+
+Pense assim: "Right is right" (Right está certo/correto).
+
+### Problema que resolve
+
+```csharp
+// ❌ ERRADO - Exceções para fluxo de controle
+public byte[] ConcatenarArquivos(List<string> urls)
+{
+    if (urls == null || !urls.Any())
+        throw new ArgumentException("Nenhum arquivo para concatenar"); // 💥 Exceção
+    
+    // ... lógica
+    return resultado;
+}
+
+// ✅ CORRETO - Either para erros tipados
+public Either<ErrorResult, byte[]> ConcatenarArquivos(List<string> urls)
+{
+    if (urls == null || !urls.Any())
+        return Either.Left<ErrorResult, byte[]>(ErrorResult.ValidationError("Nenhum arquivo"));
+    
+    // ... lógica
+    return Either.Right<ErrorResult, byte[]>(resultado);
+}
+```
+
+### Implementação Completa
+
+```csharp
+public readonly struct Either<L, R> : IEquatable<Either<L, R>>
+{
+    private readonly L _left;
+    private readonly R _right;
+
+    public bool IsLeft { get; }
+    public bool IsRight => !IsLeft;
+
+    private Either(L left)
+    {
+        IsLeft = true;
+        _left = left;
+        _right = default!;
+    }
+
+    private Either(R right)
+    {
+        IsLeft = false;
+        _right = right;
+        _left = default!;
+    }
+
+    public static Either<L, R> Left(L value) => new Either<L, R>(value);
+    public static Either<L, R> Right(R value) => new Either<L, R>(value);
+
+    public T Match<T>(Func<L, T> left, Func<R, T> right)
+        => IsLeft ? left(_left) : right(_right);
+
+    public void Switch(Action<L> left, Action<R> right)
+    {
+        if (IsLeft) left(_left);
+        else right(_right);
+    }
+
+    public Either<L, T> Map<T>(Func<R, T> f)
+        => IsRight ? Either<L, T>.Right(f(_right)) : Either<L, T>.Left(_left);
+
+    public Either<T, R> MapLeft<T>(Func<L, T> f)
+        => IsLeft ? Either<T, R>.Left(f(_left)) : Either<T, R>.Right(_right);
+
+    public Either<L, T> Bind<T>(Func<R, Either<L, T>> f)
+        => IsRight ? f(_right) : Either<L, T>.Left(_left);
+
+    public R GetRightOrDefault(R fallback = default!)
+        => IsRight ? _right : fallback;
+
+    public L GetLeftOrDefault(L fallback = default!)
+        => IsLeft ? _left : fallback;
+
+    public override string ToString()
+        => IsLeft ? $"Left({_left})" : $"Right({_right})";
+
+    public bool Equals(Either<L, R> other)
+    {
+        if (IsLeft != other.IsLeft) return false;
+        return IsLeft ? Equals(_left, other._left) : Equals(_right, other._right);
+    }
+
+    public override bool Equals(object? obj) => obj is Either<L, R> e && Equals(e);
+    public override int GetHashCode() => IsLeft ? (_left?.GetHashCode() ?? 0) ^ 0xAAAA : (_right?.GetHashCode() ?? 0) ^ 0x5555;
+    public static bool operator ==(Either<L, R> a, Either<L, R> b) => a.Equals(b);
+    public static bool operator !=(Either<L, R> a, Either<L, R> b) => !a.Equals(b);
+}
+
+public static class Either
+{
+    public static Either<L, R> Left<L, R>(L value) => Either<L, R>.Left(value);
+    public static Either<L, R> Right<L, R>(R value) => Either<L, R>.Right(value);
+}
+```
+
+### Uso dos Métodos
+
+```csharp
+// Match - Trata ambos os casos e retorna um valor
+var resultado = either.Match(
+    left: erro => $"Falhou: {erro.Messages.First()}",
+    right: sucesso => $"Sucesso: {sucesso.Length} bytes"
+);
+
+// Switch - Executa ações (sem retorno)
+either.Switch(
+    left: erro => _logger.LogError(erro.Messages.First()),
+    right: dados => _storage.Upload(dados)
+);
+
+// Map - Transforma o valor de sucesso (Right)
+Either<ErrorResult, byte[]> arquivoPdf = ObterPdf();
+Either<ErrorResult, string> base64 = arquivoPdf.Map(bytes => Convert.ToBase64String(bytes));
+
+// Bind - Encadeia operações que também retornam Either
+var resultado = ObterArquivo("http://...")
+    .Bind(bytes => ConverterParaBase64(bytes));
+```
+
+---
+
+### 2. Option/Maybe Monad - Para Valores Opcionais
+
+### O que é?
+Representa um valor que pode ou não existir (alternativa ao null).
+
+### Implementação Completa
+
+```csharp
+public readonly struct Option<T>
+{
+    private readonly T _value;
+    public bool IsSome { get; }
+    public bool IsNone => !IsSome;
+
+    private Option(T value, bool isSome)
+    {
+        _value = value;
+        IsSome = isSome;
+    }
+
+    public static Option<T> Some(T value) 
+        => value is null ? None() : new Option<T>(value, true);
+    
+    public static Option<T> None() => new Option<T>(default!, false);
+
+    public TResult Match<TResult>(Func<T, TResult> some, Func<TResult> none)
+        => IsSome ? some(_value) : none();
+
+    public void Switch(Action<T> some, Action none)
+    {
+        if (IsSome) some(_value);
+        else none();
+    }
+
+    public Option<TResult> Map<TResult>(Func<T, TResult> f)
+        => IsSome ? Option<TResult>.Some(f(_value)) : Option<TResult>.None();
+
+    public Option<TResult> Bind<TResult>(Func<T, Option<TResult>> f)
+        => IsSome ? f(_value) : Option<TResult>.None();
+
+    public Either<L, T> ToEither<L>(L leftValue)
+        => IsSome ? Either<L, T>.Right(_value) : Either<L, T>.Left(leftValue);
+
+    public T GetValueOrDefault(T fallback = default!)
+        => IsSome ? _value : fallback;
+}
+
+public static class Option
+{
+    public static Option<T> Some<T>(T value) => Option<T>.Some(value);
+    public static Option<T> None<T>() => Option<T>.None();
+    public static Option<T> FromNullable<T>(T? value) where T : class
+        => value is null ? None<T>() : Some(value);
+}
+```
+
+### Uso
+
+```csharp
+Option<User> usuario = _repository.FindById(id);
+
+var nome = usuario.Match(
+    some: u => u.Nome,
+    none: () => "Usuário não encontrado"
+);
+
+// Converter para Either quando necessário
+Either<ErrorResult, User> result = usuario.ToEither(
+    ErrorResult.NotFound("Usuário não encontrado"));
+```
+
+---
+
+### 3. Result Pattern - Either Simplificado
+
+### O que é?
+Uma versão mais específica do Either para Success/Failure.
+
+### Implementação Completa
+
+```csharp
+public readonly struct Result<T>
+{
+    public T Value { get; }
+    public string Error { get; }
+    public bool IsSuccess { get; }
+    public bool IsFailure => !IsSuccess;
+
+    private Result(T value)
+    {
+        Value = value;
+        Error = default!;
+        IsSuccess = true;
+    }
+
+    private Result(string error)
+    {
+        Value = default!;
+        Error = error;
+        IsSuccess = false;
+    }
+
+    public static Result<T> Success(T value) => new(value);
+    public static Result<T> Failure(string error) => new(error);
+
+    public static implicit operator Result<T>(T value) => Success(value);
+
+    public Result<TNew> Map<TNew>(Func<T, TNew> f)
+        => IsSuccess ? Result<TNew>.Success(f(Value)) : Result<TNew>.Failure(Error);
+
+    public Result<TNew> Bind<TNew>(Func<T, Result<TNew>> f)
+        => IsSuccess ? f(Value) : Result<TNew>.Failure(Error);
+
+    public T GetValueOrDefault(T fallback = default!)
+        => IsSuccess ? Value : fallback;
+}
+```
+
+---
+
+### 4. Validation Monad - Acumula Múltiplos Erros
+
+### O que é?
+Diferente do Either que para no primeiro erro, Validation **acumula todos**.
+
+### Implementação Completa
+
+```csharp
+public class Validation<T>
+{
+    public T Value { get; }
+    public List<string> Errors { get; } = new();
+    public bool IsValid => !Errors.Any();
+    public bool IsInvalid => !IsValid;
+
+    private Validation(T value) => Value = value;
+    private Validation(List<string> errors) => Errors = errors;
+
+    public static Validation<T> Success(T value) => new(value);
+    public static Validation<T> Failure(string error) => new(new List<string> { error });
+    public static Validation<T> Failure(List<string> errors) => new(errors);
+
+    public static Validation<T> Combine(params Validation<T>[] validations)
+    {
+        var errors = validations.SelectMany(v => v.Errors).ToList();
+        return errors.Any() ? Failure(errors) : validations.First();
+    }
+
+    public Validation<TResult> Map<TResult>(Func<T, TResult> f)
+        => IsValid ? Validation<TResult>.Success(f(Value)) : Validation<TResult>.Failure(Errors);
+
+    public Either<List<string>, T> ToEither()
+        => IsValid ? Either<List<string>, T>.Right(Value) : Either<List<string>, T>.Left(Errors);
+}
+```
+
+### Uso
+
+```csharp
+var validacoes = Validation<Veiculo>.Combine(
+    ValidarPlaca(veiculo.Placa),
+    ValidarChassi(veiculo.Chassi),
+    ValidarRenavam(veiculo.Renavam)
+);
+// Retorna TODOS os erros de uma vez, não apenas o primeiro
+
+if (validacoes.IsInvalid)
+    return BadRequest(validacoes.Errors);
+```
+
+---
+
+### 5. Railway Oriented Programming
+
+### O que é?
+Encadeamento de operações onde qualquer falha "desvia" para a trilha de erro.
+
+### Implementação Completa
+
+```csharp
+public static class RailwayExtensions
+{
+    public static Either<L, R2> Then<L, R1, R2>(
+        this Either<L, R1> either,
+        Func<R1, Either<L, R2>> next)
+        => either.Bind(next);
+
+    public static async Task<Either<L, R2>> ThenAsync<L, R1, R2>(
+        this Either<L, R1> either,
+        Func<R1, Task<Either<L, R2>>> next)
+    {
+        if (either.IsLeft)
+            return Either<L, R2>.Left(either.GetLeftOrDefault());
+        return await next(either.GetRightOrDefault());
+    }
+
+    public static async Task<Either<L, R2>> ThenAsync<L, R1, R2>(
+        this Task<Either<L, R1>> eitherTask,
+        Func<R1, Task<Either<L, R2>>> next)
+    {
+        var either = await eitherTask;
+        return await either.ThenAsync(next);
+    }
+
+    public static Either<L, R> Tap<L, R>(
+        this Either<L, R> either,
+        Action<R> action)
+    {
+        if (either.IsRight)
+            action(either.GetRightOrDefault());
+        return either;
+    }
+
+    public static async Task<Either<L, R>> TapAsync<L, R>(
+        this Either<L, R> either,
+        Func<R, Task> action)
+    {
+        if (either.IsRight)
+            await action(either.GetRightOrDefault());
+        return either;
+    }
+
+    public static async Task<Either<L, R>> TapAsync<L, R>(
+        this Task<Either<L, R>> eitherTask,
+        Func<R, Task> action)
+    {
+        var either = await eitherTask;
+        return await either.TapAsync(action);
+    }
+}
+```
+
+### Uso
+
+```csharp
+var resultado = await ValidarDados(request)
+    .Then(dados => BuscarVeiculo(dados.VeiculoId))
+    .ThenAsync(veiculo => GerarDocumento(veiculo))
+    .ThenAsync(documento => EnviarParaStorage(documento))
+    .TapAsync(url => NotificarUsuario(url));
+
+// Se qualquer etapa falhar, as próximas são ignoradas automaticamente
+```
+
+---
+
+### 6. Specification Pattern - Regras de Negócio Encapsuláveis
+
+### Implementação Completa
+
+```csharp
+public interface ISpecification<T>
+{
+    bool IsSatisfiedBy(T entity);
+    string ErrorMessage { get; }
+}
+
+public abstract class Specification<T> : ISpecification<T>
+{
+    public abstract bool IsSatisfiedBy(T entity);
+    public abstract string ErrorMessage { get; }
+
+    public Specification<T> And(Specification<T> other)
+        => new AndSpecification<T>(this, other);
+
+    public Specification<T> Or(Specification<T> other)
+        => new OrSpecification<T>(this, other);
+
+    public Specification<T> Not()
+        => new NotSpecification<T>(this);
+
+    public Either<ErrorResult, T> Validate(T entity)
+        => IsSatisfiedBy(entity)
+            ? Either.Right<ErrorResult, T>(entity)
+            : Either.Left<ErrorResult, T>(ErrorResult.ValidationError(ErrorMessage));
+}
+
+public class AndSpecification<T> : Specification<T>
+{
+    private readonly Specification<T> _left;
+    private readonly Specification<T> _right;
+
+    public AndSpecification(Specification<T> left, Specification<T> right)
+    {
+        _left = left;
+        _right = right;
+    }
+
+    public override bool IsSatisfiedBy(T entity)
+        => _left.IsSatisfiedBy(entity) && _right.IsSatisfiedBy(entity);
+
+    public override string ErrorMessage
+        => !_left.IsSatisfiedBy(default!) ? _left.ErrorMessage : _right.ErrorMessage;
+}
+
+public class OrSpecification<T> : Specification<T>
+{
+    private readonly Specification<T> _left;
+    private readonly Specification<T> _right;
+
+    public OrSpecification(Specification<T> left, Specification<T> right)
+    {
+        _left = left;
+        _right = right;
+    }
+
+    public override bool IsSatisfiedBy(T entity)
+        => _left.IsSatisfiedBy(entity) || _right.IsSatisfiedBy(entity);
+
+    public override string ErrorMessage
+        => $"{_left.ErrorMessage} ou {_right.ErrorMessage}";
+}
+
+public class NotSpecification<T> : Specification<T>
+{
+    private readonly Specification<T> _spec;
+
+    public NotSpecification(Specification<T> spec) => _spec = spec;
+
+    public override bool IsSatisfiedBy(T entity) => !_spec.IsSatisfiedBy(entity);
+    public override string ErrorMessage => $"Não: {_spec.ErrorMessage}";
+}
+```
+
+### Uso
+
+```csharp
+public class VeiculoAtivoSpec : Specification<Veiculo>
+{
+    public override bool IsSatisfiedBy(Veiculo v) => v.Status == Status.Ativo;
+    public override string ErrorMessage => "Veículo deve estar ativo";
+}
+
+public class VeiculoComDocumentoSpec : Specification<Veiculo>
+{
+    public override bool IsSatisfiedBy(Veiculo v) => !string.IsNullOrEmpty(v.CRLV);
+    public override string ErrorMessage => "Veículo deve ter CRLV";
+}
+
+// Composição
+var spec = new VeiculoAtivoSpec().And(new VeiculoComDocumentoSpec());
+
+// Validação com Either
+if (!spec.IsSatisfiedBy(veiculo))
+    return Either.Left<ErrorResult, Veiculo>(ErrorResult.ValidationError(spec.ErrorMessage));
+
+// Ou direto
+var resultado = spec.Validate(veiculo);
+```
+
+---
+
+### 7. Pipe Extensions - Composição Fluente
+
+### Implementação Completa
+
+```csharp
+public static class PipeExtensions
+{
+    public static TResult Pipe<T, TResult>(this T value, Func<T, TResult> func)
+        => func(value);
+
+    public static async Task<TResult> PipeAsync<T, TResult>(
+        this T value, Func<T, Task<TResult>> func)
+        => await func(value);
+
+    public static async Task<TResult> PipeAsync<T, TResult>(
+        this Task<T> task, Func<T, TResult> func)
+        => func(await task);
+
+    public static T Tap<T>(this T value, Action<T> action)
+    {
+        action(value);
+        return value;
+    }
+
+    public static async Task<T> TapAsync<T>(this T value, Func<T, Task> action)
+    {
+        await action(value);
+        return value;
+    }
+
+    public static T When<T>(this T value, bool condition, Func<T, T> func)
+        => condition ? func(value) : value;
+
+    public static T When<T>(this T value, Func<T, bool> predicate, Func<T, T> func)
+        => predicate(value) ? func(value) : value;
+
+    public static T Unless<T>(this T value, bool condition, Func<T, T> func)
+        => condition ? value : func(value);
+}
+```
+
+### Uso
+
+```csharp
+var resultado = dados
+    .Pipe(Validar)
+    .Tap(d => _logger.LogInformation("Dados validados"))
+    .When(incluirExtras, AgregarExtras)
+    .When(d => d.Prioridade > 5, MarcarUrgente)
+    .Pipe(Processar)
+    .Pipe(Formatar);
+```
+
+---
+
+### 8. Unit Type - Para Operações Sem Retorno
+
+### Implementação
+
+```csharp
+public readonly struct Unit : IEquatable<Unit>
+{
+    public static readonly Unit Value = new();
+
+    public bool Equals(Unit other) => true;
+    public override bool Equals(object? obj) => obj is Unit;
+    public override int GetHashCode() => 0;
+    public override string ToString() => "()";
+
+    public static bool operator ==(Unit a, Unit b) => true;
+    public static bool operator !=(Unit a, Unit b) => false;
+}
+```
+
+### Uso
+
+```csharp
+public Either<ErrorResult, Unit> DeletarDocumento(int id)
+{
+    var doc = _repository.GetById(id);
+    if (doc == null)
+        return Either.Left<ErrorResult, Unit>(ErrorResult.ValidationError("Não encontrado"));
+
+    _repository.Delete(doc);
+    return Either.Right<ErrorResult, Unit>(Unit.Value);
+}
+
+// Consumindo
+var resultado = _service.DeletarDocumento(id);
+return resultado.Match(
+    left: erro => NotFound(erro.Messages),
+    right: _ => NoContent()
+);
+```
+
+---
+
+### 9. Try Monad - Encapsula Exceções
+
+### Implementação Completa
+
+```csharp
+public readonly struct Try<T>
+{
+    private readonly T _value;
+    private readonly Exception _exception;
+    public bool IsSuccess { get; }
+    public bool IsFailure => !IsSuccess;
+
+    private Try(T value)
+    {
+        _value = value;
+        _exception = null!;
+        IsSuccess = true;
+    }
+
+    private Try(Exception ex)
+    {
+        _value = default!;
+        _exception = ex;
+        IsSuccess = false;
+    }
+
+    public static Try<T> Of(Func<T> func)
+    {
+        try { return new Try<T>(func()); }
+        catch (Exception ex) { return new Try<T>(ex); }
+    }
+
+    public static async Task<Try<T>> OfAsync(Func<Task<T>> func)
+    {
+        try { return new Try<T>(await func()); }
+        catch (Exception ex) { return new Try<T>(ex); }
+    }
+
+    public Try<TResult> Map<TResult>(Func<T, TResult> f)
+        => IsSuccess ? Try<TResult>.Of(() => f(_value)) : new Try<TResult>(_exception);
+
+    public Try<TResult> Bind<TResult>(Func<T, Try<TResult>> f)
+        => IsSuccess ? f(_value) : new Try<TResult>(_exception);
+
+    public Either<ErrorResult, T> ToEither()
+        => IsSuccess
+            ? Either.Right<ErrorResult, T>(_value)
+            : Either.Left<ErrorResult, T>(ErrorResult.Exception(_exception.Message));
+
+    public T GetValueOrDefault(T fallback = default!)
+        => IsSuccess ? _value : fallback;
+
+    public Exception? GetException() => IsFailure ? _exception : null;
+}
+```
+
+### Uso
+
+```csharp
+// Convertendo código que lança exceção para Either
+var resultado = Try<JObject>.Of(() => JObject.Parse(jsonString))
+    .Map(json => json["data"]!.ToString())
+    .ToEither();
+
+// Com operações async
+var resultado = await Try<HttpResponseMessage>.OfAsync(
+        () => _httpClient.GetAsync(url))
+    .ToEither();
+
+// Em pipeline
+var resultado = Try<Config>.Of(() => LoadConfig("app.json"))
+    .Bind(config => Try<Database>.Of(() => ConnectDatabase(config)))
+    .Bind(db => Try<List<User>>.Of(() => db.GetUsers()))
+    .ToEither();
+```
+
+---
+
+### 10. ErrorResult - Tipo de Erro Padrão
+
+### Implementação Completa
+
+```csharp
+public class ErrorResult
+{
+    public List<string> Messages { get; private set; } = new();
+    public bool IsValidationError { get; private set; }
+    public bool IsNotFoundError { get; private set; }
+    public bool IsExceptionError { get; private set; }
+    public bool IsError => IsValidationError || IsNotFoundError || IsExceptionError;
+
+    private ErrorResult() { }
+
+    public static ErrorResult ValidationError(string message)
+        => new() { IsValidationError = true, Messages = new List<string> { message } };
+
+    public static ErrorResult ValidationError(List<string> messages)
+        => new() { IsValidationError = true, Messages = messages };
+
+    public static ErrorResult NotFound(string message)
+        => new() { IsNotFoundError = true, Messages = new List<string> { message } };
+
+    public static ErrorResult Exception(string message)
+        => new() { IsExceptionError = true, Messages = new List<string> { message } };
+
+    public static ErrorResult Exception(Exception ex)
+        => Exception(ex.Message);
+
+    public int ToHttpStatus()
+    {
+        if (IsValidationError) return 400;
+        if (IsNotFoundError) return 404;
+        return 500;
+    }
+}
+```
+
+---
+
+---
+
+## 🐍 PYTHON - Performance Máxima
+
+> Funciona com: FastAPI, Django, Flask, ou qualquer framework. A lógica é Python puro.
+
+### Tipos Funcionais em Python
+
+```python
+from __future__ import annotations
+from dataclasses import dataclass
+from typing import TypeVar, Generic, Callable, Union, Optional
+from abc import ABC, abstractmethod
+
+L = TypeVar('L')
+R = TypeVar('R')
+T = TypeVar('T')
+
+# ═══════════════════════════════════════════════════════════
+# EITHER MONAD
+# ═══════════════════════════════════════════════════════════
+
+@dataclass(frozen=True, slots=True)
+class Left(Generic[L]):
+    value: L
+    
+    @property
+    def is_left(self) -> bool:
+        return True
+    
+    @property
+    def is_right(self) -> bool:
+        return False
+
+@dataclass(frozen=True, slots=True)
+class Right(Generic[R]):
+    value: R
+    
+    @property
+    def is_left(self) -> bool:
+        return False
+    
+    @property
+    def is_right(self) -> bool:
+        return True
+
+Either = Union[Left[L], Right[R]]
+
+def match(
+    either: Either[L, R],
+    left: Callable[[L], T],
+    right: Callable[[R], T]
+) -> T:
+    if isinstance(either, Left):
+        return left(either.value)
+    return right(either.value)
+
+def map_right(either: Either[L, R], f: Callable[[R], T]) -> Either[L, T]:
+    if isinstance(either, Right):
+        return Right(f(either.value))
+    return either
+
+def bind(either: Either[L, R], f: Callable[[R], Either[L, T]]) -> Either[L, T]:
+    if isinstance(either, Right):
+        return f(either.value)
+    return either
+
+# ═══════════════════════════════════════════════════════════
+# OPTION MONAD
+# ═══════════════════════════════════════════════════════════
+
+@dataclass(frozen=True, slots=True)
+class Some(Generic[T]):
+    value: T
+    
+    @property
+    def is_some(self) -> bool:
+        return True
+
+@dataclass(frozen=True, slots=True)
+class Nothing:
+    @property
+    def is_some(self) -> bool:
+        return False
+
+Option = Union[Some[T], Nothing]
+
+def from_nullable(value: Optional[T]) -> Option[T]:
+    return Some(value) if value is not None else Nothing()
+
+def get_or_default(option: Option[T], default: T) -> T:
+    return option.value if isinstance(option, Some) else default
+
+# ═══════════════════════════════════════════════════════════
+# ERROR RESULT
+# ═══════════════════════════════════════════════════════════
+
+@dataclass(frozen=True, slots=True)
+class ErrorResult:
+    messages: tuple[str, ...]
+    is_validation: bool = False
+    is_not_found: bool = False
+    is_exception: bool = False
+    
+    @classmethod
+    def validation(cls, msg: str) -> ErrorResult:
+        return cls(messages=(msg,), is_validation=True)
+    
+    @classmethod
+    def not_found(cls, msg: str) -> ErrorResult:
+        return cls(messages=(msg,), is_not_found=True)
+    
+    @classmethod
+    def exception(cls, msg: str) -> ErrorResult:
+        return cls(messages=(msg,), is_exception=True)
+    
+    @property
+    def http_status(self) -> int:
+        if self.is_validation:
+            return 400
+        if self.is_not_found:
+            return 404
+        return 500
+```
+
+### Railway Extensions Python
+
+```python
+from typing import Awaitable
+import asyncio
+
+# ═══════════════════════════════════════════════════════════
+# RAILWAY ORIENTED PROGRAMMING
+# ═══════════════════════════════════════════════════════════
+
+def then(
+    either: Either[L, R],
+    f: Callable[[R], Either[L, T]]
+) -> Either[L, T]:
+    return bind(either, f)
+
+async def then_async(
+    either: Either[L, R],
+    f: Callable[[R], Awaitable[Either[L, T]]]
+) -> Either[L, T]:
+    if isinstance(either, Right):
+        return await f(either.value)
+    return either
+
+def tap(
+    either: Either[L, R],
+    f: Callable[[R], None]
+) -> Either[L, R]:
+    if isinstance(either, Right):
+        f(either.value)
+    return either
+
+async def tap_async(
+    either: Either[L, R],
+    f: Callable[[R], Awaitable[None]]
+) -> Either[L, R]:
+    if isinstance(either, Right):
+        await f(either.value)
+    return either
+
+# ═══════════════════════════════════════════════════════════
+# PIPE COMPOSITION
+# ═══════════════════════════════════════════════════════════
+
+class Pipe(Generic[T]):
+    __slots__ = ('_value',)
+    
+    def __init__(self, value: T):
+        self._value = value
+    
+    def map(self, f: Callable[[T], R]) -> Pipe[R]:
+        return Pipe(f(self._value))
+    
+    def tap(self, f: Callable[[T], None]) -> Pipe[T]:
+        f(self._value)
+        return self
+    
+    def when(self, condition: bool, f: Callable[[T], T]) -> Pipe[T]:
+        return Pipe(f(self._value)) if condition else self
+    
+    @property
+    def value(self) -> T:
+        return self._value
+```
+
+### Specification Pattern Python
+
+```python
+# ═══════════════════════════════════════════════════════════
+# SPECIFICATION PATTERN
+# ═══════════════════════════════════════════════════════════
+
+class Specification(ABC, Generic[T]):
+    @abstractmethod
+    def is_satisfied_by(self, entity: T) -> bool:
+        pass
+    
+    @property
+    @abstractmethod
+    def error_message(self) -> str:
+        pass
+    
+    def validate(self, entity: T) -> Either[ErrorResult, T]:
+        if self.is_satisfied_by(entity):
+            return Right(entity)
+        return Left(ErrorResult.validation(self.error_message))
+    
+    def and_(self, other: Specification[T]) -> Specification[T]:
+        return AndSpec(self, other)
+    
+    def or_(self, other: Specification[T]) -> Specification[T]:
+        return OrSpec(self, other)
+    
+    def not_(self) -> Specification[T]:
+        return NotSpec(self)
+
+@dataclass
+class AndSpec(Specification[T]):
+    left: Specification[T]
+    right: Specification[T]
+    
+    def is_satisfied_by(self, entity: T) -> bool:
+        return self.left.is_satisfied_by(entity) and self.right.is_satisfied_by(entity)
+    
+    @property
+    def error_message(self) -> str:
+        return self.left.error_message if not self.left.is_satisfied_by(None) else self.right.error_message
+
+@dataclass
+class OrSpec(Specification[T]):
+    left: Specification[T]
+    right: Specification[T]
+    
+    def is_satisfied_by(self, entity: T) -> bool:
+        return self.left.is_satisfied_by(entity) or self.right.is_satisfied_by(entity)
+    
+    @property
+    def error_message(self) -> str:
+        return f"{self.left.error_message} ou {self.right.error_message}"
+
+@dataclass
+class NotSpec(Specification[T]):
+    spec: Specification[T]
+    
+    def is_satisfied_by(self, entity: T) -> bool:
+        return not self.spec.is_satisfied_by(entity)
+    
+    @property
+    def error_message(self) -> str:
+        return f"Não: {self.spec.error_message}"
+```
+
+### Python Performance Tips
+
+```python
+# ═══════════════════════════════════════════════════════════
+# PERFORMANCE PATTERNS
+# ═══════════════════════════════════════════════════════════
+
+# ❌ LENTO - List comprehension com append
+result = []
+for item in items:
+    result.append(transform(item))
+
+# ✅ RÁPIDO - List comprehension direto
+result = [transform(item) for item in items]
+
+# ✅ MAIS RÁPIDO - Generator para grandes datasets
+result = (transform(item) for item in items)
+
+# ───────────────────────────────────────────────────────────
+
+# ❌ LENTO - Concatenação de strings
+result = ""
+for s in strings:
+    result += s
+
+# ✅ RÁPIDO - Join
+result = "".join(strings)
+
+# ───────────────────────────────────────────────────────────
+
+# ❌ LENTO - Múltiplas buscas em lista
+for item in items:
+    if target in other_items:  # O(n) cada vez
+        process(item)
+
+# ✅ RÁPIDO - Set para lookup O(1)
+other_set = set(other_items)
+for item in items:
+    if target in other_set:  # O(1)
+        process(item)
+
+# ───────────────────────────────────────────────────────────
+
+# ❌ LENTO - Dict get com default toda vez
+for key in keys:
+    if key in my_dict:
+        value = my_dict[key]
+    else:
+        value = compute_default()
+
+# ✅ RÁPIDO - setdefault ou get
+for key in keys:
+    value = my_dict.get(key) or compute_default()
+
+# ✅ MELHOR - defaultdict
+from collections import defaultdict
+my_dict = defaultdict(compute_default)
+
+# ───────────────────────────────────────────────────────────
+
+# ❌ LENTO - Importações dentro de funções
+def process():
+    import heavy_module  # Importa toda vez
+    return heavy_module.do_something()
+
+# ✅ RÁPIDO - Import no topo (lazy se necessário)
+from functools import lru_cache
+
+@lru_cache(maxsize=1)
+def get_heavy_module():
+    import heavy_module
+    return heavy_module
+
+# ───────────────────────────────────────────────────────────
+
+# ✅ SLOTS para classes com muitas instâncias
+@dataclass(slots=True, frozen=True)
+class Point:
+    x: float
+    y: float
+    # Usa ~40% menos memória que dataclass normal
+
+# ───────────────────────────────────────────────────────────
+
+# ✅ CACHE para funções puras
+from functools import lru_cache, cache
+
+@cache  # Python 3.9+ (unbounded)
+def fibonacci(n: int) -> int:
+    if n < 2:
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)
+
+@lru_cache(maxsize=128)  # Com limite
+def expensive_computation(x: int) -> int:
+    return x ** x
+```
+
+### Async Python Performance
+
+```python
+import asyncio
+from typing import List, TypeVar
+from collections.abc import Coroutine
+
+T = TypeVar('T')
+
+# ═══════════════════════════════════════════════════════════
+# ASYNC PATTERNS
+# ═══════════════════════════════════════════════════════════
+
+# ❌ LENTO - Awaits sequenciais
+async def fetch_all_slow(ids: List[int]) -> List[Data]:
+    results = []
+    for id in ids:
+        data = await fetch_one(id)
+        results.append(data)
+    return results
+
+# ✅ RÁPIDO - Gather paralelo
+async def fetch_all_fast(ids: List[int]) -> List[Data]:
+    tasks = [fetch_one(id) for id in ids]
+    return await asyncio.gather(*tasks)
+
+# ✅ COM CONTROLE DE CONCORRÊNCIA
+async def fetch_all_controlled(ids: List[int], max_concurrent: int = 10) -> List[Data]:
+    semaphore = asyncio.Semaphore(max_concurrent)
+    
+    async def fetch_with_limit(id: int) -> Data:
+        async with semaphore:
+            return await fetch_one(id)
+    
+    tasks = [fetch_with_limit(id) for id in ids]
+    return await asyncio.gather(*tasks)
+
+# ───────────────────────────────────────────────────────────
+
+# ✅ STREAMING para grandes volumes
+async def process_stream(items: AsyncIterator[T]) -> None:
+    async for item in items:
+        await process(item)
+        
+# ✅ BATCH PROCESSING
+async def process_in_batches(items: List[T], batch_size: int = 100) -> None:
+    for i in range(0, len(items), batch_size):
+        batch = items[i:i + batch_size]
+        await asyncio.gather(*[process(item) for item in batch])
+```
+
+### Arquitetura Python - Estrutura de Pastas
+
+```
+src/
+├── core/                    # Tipos funcionais (Either, Option, Spec, etc)
+│   ├── either.py
+│   ├── option.py
+│   ├── error_result.py
+│   ├── specification.py
+│   ├── railway.py
+│   └── pipe.py
+│
+├── domain/                  # Domínio puro
+│   ├── entities/            # Entidades
+│   │   └── produto.py
+│   └── enums/               # Enums do domínio
+│       └── status.py
+│
+├── application/             # Casos de uso
+│   ├── handlers/            # Orquestradores
+│   │   └── produto_handler.py
+│   ├── services/            # Lógica de negócio
+│   │   └── produto_service.py
+│   ├── specifications/      # Regras de validação
+│   │   └── produto_specs.py
+│   └── view_models/         # DTOs (Request/Response)
+│       └── produto_vm.py
+│
+├── infrastructure/          # Implementações concretas
+│   ├── repositories/        # Acesso a dados
+│   │   └── produto_repository.py
+│   ├── services/            # Serviços externos
+│   ├── config.py            # Configurações
+│   └── dependencies.py      # Injeção de dependências
+│
+└── api/                     # Camada HTTP
+    └── controllers/         # Endpoints
+        └── produto_controller.py
+```
+
+### Fluxo de Dados Python
+
+```
+REQUEST → CONTROLLER → HANDLER → SERVICE → REPOSITORY
+              ↓            ↓         ↓          ↓
+          ViewModel    Command    Either    Entity
+              ↓
+          RESPONSE
+```
+
+### Exemplo Completo Python
+
+```python
+# ═══════════════════════════════════════════════════════════
+# DOMAIN: src/domain/entities/produto.py
+# ═══════════════════════════════════════════════════════════
+
+@dataclass
+class Produto(AuditableEntity[UUID]):
+    id: UUID = field(default_factory=uuid4)
+    nome: str = ""
+    preco: float = 0.0
+    status: Status = Status.PENDING
+
+    @classmethod
+    def create(cls, nome: str, preco: float) -> Produto:
+        return cls(nome=nome, preco=preco)
+
+# ═══════════════════════════════════════════════════════════
+# VIEW MODELS: src/application/view_models/produto_vm.py
+# ═══════════════════════════════════════════════════════════
+
+class CreateProdutoRequest(BaseModel):
+    nome: str = Field(..., min_length=1)
+    preco: float = Field(..., gt=0)
+
+class ProdutoResponse(BaseModel):
+    id: UUID
+    nome: str
+    preco: float
+    status: str
+
+# ═══════════════════════════════════════════════════════════
+# SPECIFICATIONS: src/application/specifications/produto_specs.py
+# ═══════════════════════════════════════════════════════════
+
+class PrecoPositivoSpec(Specification[float]):
+    def is_satisfied_by(self, entity: float) -> bool:
+        return entity > 0
+
+    @property
+    def error_message(self) -> str:
+        return "Preco deve ser positivo"
+
+# ═══════════════════════════════════════════════════════════
+# SERVICE: src/application/services/produto_service.py
+# ═══════════════════════════════════════════════════════════
+
+class ProdutoService:
+    __slots__ = ("_repo",)
+
+    def __init__(self, repo: ProdutoRepository):
+        self._repo = repo
+
+    async def create(self, nome: str, preco: float) -> Either[ErrorResult, Produto]:
+        # valida
+        if not PrecoPositivoSpec().is_satisfied_by(preco):
+            return Left(ErrorResult.validation("Preco invalido"))
+
+        # cria e salva
+        produto = Produto.create(nome=nome, preco=preco)
+        return await self._repo.save(produto)
+
+    async def get_by_id(self, id: UUID) -> Either[ErrorResult, Produto]:
+        result = await self._repo.get_by_id(id)
+        return to_either(result, ErrorResult.not_found("Nao encontrado"))
+
+# ═══════════════════════════════════════════════════════════
+# HANDLER: src/application/handlers/produto_handler.py
+# ═══════════════════════════════════════════════════════════
+
+@dataclass(frozen=True, slots=True)
+class CreateProdutoCommand:
+    nome: str
+    preco: float
+
+class ProdutoHandler:
+    __slots__ = ("_service",)
+
+    def __init__(self, service: ProdutoService):
+        self._service = service
+
+    async def create(self, cmd: CreateProdutoCommand) -> Either[..., ProdutoResponse]:
+        result = await self._service.create(cmd.nome, cmd.preco)
+        return Right(to_response(result.value)) if result.is_right else result
+
+# ═══════════════════════════════════════════════════════════
+# CONTROLLER: src/api/controllers/produto_controller.py
+# ═══════════════════════════════════════════════════════════
+
+router = APIRouter(prefix="/produtos", tags=["Produtos"])
+
+@router.post("", response_model=ProdutoResponse, status_code=201)
+async def create(request: CreateProdutoRequest, handler: ProdutoHandlerDep):
+    cmd = CreateProdutoCommand(nome=request.nome, preco=request.preco)
+    result = await handler.create(cmd)
+    return unwrap_or_raise(result)
+
+# ═══════════════════════════════════════════════════════════
+# DEPENDENCIES: src/infrastructure/dependencies.py
+# ═══════════════════════════════════════════════════════════
+
+@lru_cache
+def get_produto_repository() -> InMemoryProdutoRepository:
+    return InMemoryProdutoRepository()
+
+def get_produto_service(repo = Depends(get_produto_repository)) -> ProdutoService:
+    return ProdutoService(repo)
+
+def get_produto_handler(service = Depends(get_produto_service)) -> ProdutoHandler:
+    return ProdutoHandler(service)
+
+ProdutoHandlerDep = Annotated[ProdutoHandler, Depends(get_produto_handler)]
+```
+
+---
+
+---
+
+## 🟦 TYPESCRIPT - Performance Máxima
+
+> Funciona com: React, Angular, Vue, Node, Next, ou qualquer framework. A lógica é TypeScript puro.
+
+### TypeScript Either/Option
+
+```typescript
+// ═══════════════════════════════════════════════════════════
+// TIPOS FUNCIONAIS TYPESCRIPT
+// ═══════════════════════════════════════════════════════════
+
+type Left<L> = { readonly _tag: 'Left'; readonly left: L };
+type Right<R> = { readonly _tag: 'Right'; readonly right: R };
+type Either<L, R> = Left<L> | Right<R>;
+
+const Left = <L, R = never>(value: L): Either<L, R> => ({ _tag: 'Left', left: value });
+const Right = <R, L = never>(value: R): Either<L, R> => ({ _tag: 'Right', right: value });
+
+const isLeft = <L, R>(e: Either<L, R>): e is Left<L> => e._tag === 'Left';
+const isRight = <L, R>(e: Either<L, R>): e is Right<R> => e._tag === 'Right';
+
+const match = <L, R, T>(
+  either: Either<L, R>,
+  onLeft: (l: L) => T,
+  onRight: (r: R) => T
+): T => isLeft(either) ? onLeft(either.left) : onRight(either.right);
+
+const map = <L, R, T>(
+  either: Either<L, R>,
+  f: (r: R) => T
+): Either<L, T> => isRight(either) ? Right(f(either.right)) : either;
+
+const bind = <L, R, T>(
+  either: Either<L, R>,
+  f: (r: R) => Either<L, T>
+): Either<L, T> => isRight(either) ? f(either.right) : either;
+
+// Option
+type Some<T> = { readonly _tag: 'Some'; readonly value: T };
+type None = { readonly _tag: 'None' };
+type Option<T> = Some<T> | None;
+
+const Some = <T>(value: T): Option<T> => ({ _tag: 'Some', value });
+const None: Option<never> = { _tag: 'None' };
+
+const fromNullable = <T>(value: T | null | undefined): Option<T> =>
+  value != null ? Some(value) : None;
+
+const getOrElse = <T>(option: Option<T>, defaultValue: T): T =>
+  option._tag === 'Some' ? option.value : defaultValue;
+```
+
+### Performance Patterns (React/Vue/Angular/Solid)
+
+```tsx
+// ═══════════════════════════════════════════════════════════
+// REACT PERFORMANCE
+// ═══════════════════════════════════════════════════════════
+
+// ❌ LENTO - Re-render desnecessário
+const BadComponent = ({ items }: Props) => {
+  const filtered = items.filter(i => i.active); // Recalcula sempre
+  
+  return <List items={filtered} />;
+};
+
+// ✅ RÁPIDO - Memoização
+const GoodComponent = ({ items }: Props) => {
+  const filtered = useMemo(
+    () => items.filter(i => i.active),
+    [items]
+  );
+  
+  return <List items={filtered} />;
+};
+
+// ───────────────────────────────────────────────────────────
+
+// ❌ LENTO - Callback recriado toda render
+const BadButton = ({ onClick }: Props) => {
+  const handleClick = () => {
+    track('click');
+    onClick();
+  };
+  
+  return <Button onClick={handleClick} />;
+};
+
+// ✅ RÁPIDO - Callback estável
+const GoodButton = ({ onClick }: Props) => {
+  const handleClick = useCallback(() => {
+    track('click');
+    onClick();
+  }, [onClick]);
+  
+  return <Button onClick={handleClick} />;
+};
+
+// ───────────────────────────────────────────────────────────
+
+// ✅ VIRTUAL LIST para grandes listas
+import { useVirtualizer } from '@tanstack/react-virtual';
+
+const VirtualList = ({ items }: { items: Item[] }) => {
+  const parentRef = useRef<HTMLDivElement>(null);
+  
+  const virtualizer = useVirtualizer({
+    count: items.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 50,
+  });
+
+  return (
+    <div ref={parentRef} style={{ height: '400px', overflow: 'auto' }}>
+      <div style={{ height: `${virtualizer.getTotalSize()}px` }}>
+        {virtualizer.getVirtualItems().map(virtualRow => (
+          <div
+            key={virtualRow.key}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              transform: `translateY(${virtualRow.start}px)`,
+            }}
+          >
+            <ItemRow item={items[virtualRow.index]} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ───────────────────────────────────────────────────────────
+
+// ✅ LAZY LOADING de componentes
+const HeavyComponent = lazy(() => import('./HeavyComponent'));
+
+const App = () => (
+  <Suspense fallback={<Skeleton />}>
+    <HeavyComponent />
+  </Suspense>
+);
+
+// ───────────────────────────────────────────────────────────
+
+// ✅ DEBOUNCE para inputs
+const useDebounce = <T,>(value: T, delay: number): T => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debouncedValue;
+};
+
+const SearchInput = () => {
+  const [query, setQuery] = useState('');
+  const debouncedQuery = useDebounce(query, 300);
+  
+  useEffect(() => {
+    if (debouncedQuery) {
+      search(debouncedQuery);
+    }
+  }, [debouncedQuery]);
+  
+  return <input value={query} onChange={e => setQuery(e.target.value)} />;
+};
+```
+
+### Hook com Either
+
+```tsx
+// ═══════════════════════════════════════════════════════════
+// ASYNC HOOK COM EITHER
+// ═══════════════════════════════════════════════════════════
+
+type AsyncState<T> =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: T }
+  | { status: 'error'; error: string };
+
+const useAsync = <T,>(
+  asyncFn: () => Promise<Either<string, T>>,
+  deps: DependencyList = []
+) => {
+  const [state, setState] = useState<AsyncState<T>>({ status: 'idle' });
+
+  const execute = useCallback(async () => {
+    setState({ status: 'loading' });
+    
+    const result = await asyncFn();
+    
+    match(
+      result,
+      error => setState({ status: 'error', error }),
+      data => setState({ status: 'success', data })
+    );
+  }, deps);
+
+  return {
+    ...state,
+    execute,
+    isLoading: state.status === 'loading',
+    isError: state.status === 'error',
+    isSuccess: state.status === 'success',
+  };
+};
+
+// Uso
+const DossieComponent = ({ veiculoId }: Props) => {
+  const { data, error, isLoading, execute } = useAsync(
+    () => api.gerarDossie(veiculoId),
+    [veiculoId]
+  );
+
+  if (isLoading) return <Spinner />;
+  if (error) return <ErrorMessage message={error} />;
+  if (data) return <DossieView url={data.url} />;
+  
+  return <Button onClick={execute}>Gerar Dossiê</Button>;
+};
+```
+
+---
+
+# 🧪 TESTES: QA Impressionado
+
+## Estrutura de Testes
+
+```
+tests/
+├── unit/                    # Testes isolados, sem I/O
+│   ├── specifications/      # Regras de negócio
+│   ├── handlers/           # Lógica de casos de uso
+│   └── helpers/            # Utilitários
+├── integration/            # Com banco, cache, APIs
+│   ├── repositories/
+│   └── services/
+└── e2e/                    # Fluxos completos
+```
+
+## Naming Convention
+
+```csharp
+// Padrão: [Método]_[Cenário]_[ResultadoEsperado]
+public class GerarDossieHandlerTests
+{
+    [Fact]
+    public async Task Handle_VeiculoInexistente_RetornaNotFound() { }
+    
+    [Fact]
+    public async Task Handle_VeiculoInativo_RetornaValidationError() { }
+    
+    [Fact]
+    public async Task Handle_VeiculoValido_RetornaUrlDossie() { }
+    
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public async Task Handle_PlacaInvalida_RetornaValidationError(string placa) { }
+}
+```
+
+## Test Patterns
+
+```csharp
+// ✅ ARRANGE-ACT-ASSERT claro
+[Fact]
+public async Task Handle_VeiculoValido_RetornaUrl()
+{
+    // Arrange
+    var veiculo = VeiculoBuilder.Ativo().ComDocumento().Build();
+    _veiculoRepo.Setup(r => r.GetById(1)).ReturnsAsync(Option.Some(veiculo));
+    _storage.Setup(s => s.Upload(It.IsAny<string>(), It.IsAny<byte[]>()))
+            .ReturnsAsync(Either.Right<ErrorResult, string>("https://url.com/doc.pdf"));
+    
+    var handler = new GerarDossieHandler(_veiculoRepo.Object, _storage.Object, _logger);
+    var command = new GerarDossieCommand(VeiculoId: 1);
+
+    // Act
+    var result = await handler.Handle(command, CancellationToken.None);
+
+    // Assert
+    result.IsRight.Should().BeTrue();
+    result.GetRightOrDefault().Url.Should().StartWith("https://");
+}
+
+// ✅ TESTE DE SPECIFICATION
+[Fact]
+public void VeiculoAtivoSpec_VeiculoInativo_RetornaFalse()
+{
+    var veiculo = new Veiculo { Status = Status.Inativo };
+    var spec = new VeiculoAtivoSpec();
+    
+    spec.IsSatisfiedBy(veiculo).Should().BeFalse();
+    spec.ErrorMessage.Should().Contain("ativo");
+}
+
+// ✅ TESTE DE EITHER FLOW
+[Fact]
+public async Task Pipeline_FalhaNoMeio_PropagaErro()
+{
+    var result = await Either.Right<ErrorResult, int>(1)
+        .ThenAsync(async n => Either.Right<ErrorResult, int>(n + 1))
+        .ThenAsync(async _ => Either.Left<ErrorResult, int>(ErrorResult.Validation("Erro")))
+        .ThenAsync(async n => Either.Right<ErrorResult, int>(n + 1)); // Não executa
+    
+    result.IsLeft.Should().BeTrue();
+    result.GetLeftOrDefault().Messages.Should().Contain("Erro");
+}
+```
+
+## Python Tests
+
+```python
+# ═══════════════════════════════════════════════════════════
+# PYTEST PATTERNS
+# ═══════════════════════════════════════════════════════════
+
+import pytest
+from unittest.mock import AsyncMock, Mock
+
+class TestGerarDossieHandler:
+    
+    @pytest.fixture
+    def handler(self):
+        veiculos = AsyncMock(spec=VeiculoRepository)
+        storage = AsyncMock(spec=StorageService)
+        return GerarDossieHandler(veiculos, storage), veiculos, storage
+    
+    @pytest.mark.asyncio
+    async def test_handle_veiculo_inexistente_retorna_not_found(self, handler):
+        # Arrange
+        sut, veiculos, _ = handler
+        veiculos.get_by_id.return_value = Nothing()
+        cmd = ProcessarDossieCommand(veiculo_id=1)
+        
+        # Act
+        result = await sut.handle(cmd)
+        
+        # Assert
+        assert isinstance(result, Left)
+        assert result.value.is_not_found
+    
+    @pytest.mark.asyncio
+    async def test_handle_veiculo_valido_retorna_url(self, handler):
+        # Arrange
+        sut, veiculos, storage = handler
+        veiculo = Veiculo(id=1, status=Status.ATIVO, crlv="123")
+        veiculos.get_by_id.return_value = Some(veiculo)
+        storage.upload.return_value = Right("https://url.com/doc.pdf")
+        cmd = ProcessarDossieCommand(veiculo_id=1)
+        
+        # Act
+        result = await sut.handle(cmd)
+        
+        # Assert
+        assert isinstance(result, Right)
+        assert result.value.url.startswith("https://")
+
+class TestVeiculoAtivoSpec:
+    
+    def test_veiculo_ativo_satisfaz(self):
+        veiculo = Veiculo(status=Status.ATIVO)
+        spec = VeiculoAtivoSpec()
+        
+        assert spec.is_satisfied_by(veiculo) is True
+    
+    def test_veiculo_inativo_nao_satisfaz(self):
+        veiculo = Veiculo(status=Status.INATIVO)
+        spec = VeiculoAtivoSpec()
+        
+        assert spec.is_satisfied_by(veiculo) is False
+        assert "ativo" in spec.error_message.lower()
+    
+    def test_validate_retorna_either_correto(self):
+        veiculo = Veiculo(status=Status.INATIVO)
+        spec = VeiculoAtivoSpec()
+        
+        result = spec.validate(veiculo)
+        
+        assert isinstance(result, Left)
+```
+
+---
+
+# 📊 MÉTRICAS DE QUALIDADE
+
+## Code Quality
+
+| Métrica | Ideal | Aceitável | Ruim |
+|---------|-------|-----------|------|
+| Linhas por método | < 15 | < 30 | > 30 |
+| Linhas por classe | < 100 | < 200 | > 200 |
+| Parâmetros por método | ≤ 3 | ≤ 5 | > 5 |
+| Níveis de indentação | ≤ 2 | ≤ 3 | > 3 |
+| Complexidade ciclomática | ≤ 5 | ≤ 10 | > 10 |
+| Cobertura de testes | > 80% | > 60% | < 60% |
+
+## Performance
+
+| Métrica | Ideal | Aceitável | Ruim |
+|---------|-------|-----------|------|
+| Response time P50 | < 100ms | < 300ms | > 500ms |
+| Response time P99 | < 500ms | < 1s | > 2s |
+| Memory per request | < 10MB | < 50MB | > 100MB |
+| DB queries per request | ≤ 3 | ≤ 10 | > 10 |
+| Cache hit rate | > 90% | > 70% | < 50% |
+
+---
+
+# ✅ CHECKLIST FINAL
+
+## Antes de Commitar
+
+```markdown
+□ Código compila sem warnings
+□ Testes passam (unit + integration)
+□ Cobertura > 80% nas mudanças
+□ Sem console.log / print em produção
+□ Either/Option usado ao invés de null/exceções
+□ Railway pattern em handlers
+□ Specifications para regras de negócio
+□ Nenhum N+1 query
+□ Cache onde aplicável
+□ Async sem bloqueio
+```
+
+## Performance Review
+
+```markdown
+□ Profiler executado em hot paths
+□ Sem alocações desnecessárias em loops
+□ Queries com índices apropriados
+□ Batch operations para múltiplos itens
+□ Lazy loading onde aplicável
+□ Virtual list para listas grandes (frontend)
+□ Memoização em cálculos pesados
+```
+
+---
+
+# 🔑 RESUMO EXECUTIVO
+
+```
+┌────────────────────────────────────────────────────────────┐
+│              AYU CODE STYLE - HIGH PERFORMANCE             │
+├────────────────────────────────────────────────────────────┤
+│  LINGUAGENS         C# │ TypeScript │ Python               │
+│  ├─ Mesma lógica em todas                                  │
+│  ├─ Framework muda, linguagem não                          │
+│  └─ Domine o cru, stdlib primeiro                          │
+├────────────────────────────────────────────────────────────┤
+│  MINDSET                                                   │
+│  ├─ ASK WORTHY     │ Pergunte antes de codar               │
+│  ├─ INDEX FIRST    │ Entenda antes de alterar              │
+│  ├─ KISS           │ Simples > Complexo                    │
+│  ├─ SOLID          │ Responsabilidade única                │
+│  └─ CIRÚRGICO      │ Altere só o necessário                │
+├────────────────────────────────────────────────────────────┤
+│  NUNCA REINVENTE A RODA                                    │
+│  ├─ Existe na stdlib?      │ USE                           │
+│  ├─ Existe no projeto?     │ REUTILIZE                     │
+│  ├─ Existe pattern?        │ ADAPTE                        │
+│  └─ Nenhum anterior?       │ CRIE (mínimo)                 │
+├────────────────────────────────────────────────────────────┤
+│  FUNCTIONAL                                                │
+│  ├─ Either         │ Erros são valores                     │
+│  ├─ Option         │ Null não existe                       │
+│  ├─ Railway        │ Composição linear                     │
+│  └─ Specification  │ Regras encapsuladas                   │
+├────────────────────────────────────────────────────────────┤
+│  PERFORMANCE                                               │
+│  ├─ Measure First  │ Profile antes de otimizar             │
+│  ├─ Batch Ops      │ Agrupe operações                      │
+│  ├─ Smart Cache    │ Cache no nível certo                  │
+│  └─ Async All Way  │ Nunca bloqueie                        │
+├────────────────────────────────────────────────────────────┤
+│  QUALITY                                                   │
+│  ├─ Tests > 80%    │ Cobertura de código                   │
+│  ├─ P99 < 500ms    │ Response time                         │
+│  └─ Zero N+1       │ Queries otimizadas                    │
+└────────────────────────────────────────────────────────────┘
+```
+
+---
+
