@@ -11,6 +11,7 @@ from typing import Literal
 
 try:
     from colorama import Fore, Style, init
+
     init(autoreset=True)
     COLORAMA_AVAILABLE = True
 except ImportError:
@@ -55,12 +56,7 @@ class ColoredFormatter(logging.Formatter):
         if record.exc_info:
             msg += "\n" + self.formatException(record.exc_info)
 
-        return (
-            f"{DIM}{timestamp}{RESET} "
-            f"{level_color}{level}{RESET} "
-            f"{DIM}{module}{RESET} "
-            f"{msg}"
-        )
+        return f"{DIM}{timestamp}{RESET} {level_color}{level}{RESET} {DIM}{module}{RESET} {msg}"
 
 
 class SimpleFormatter(logging.Formatter):
@@ -84,7 +80,6 @@ def setup_logger(
     log_file: str | None = None,
 ) -> logging.Logger:
     """configura e retorna logger"""
-
     logger = logging.getLogger(name)
     logger.setLevel(getattr(logging, level))
     logger.handlers.clear()
@@ -138,4 +133,3 @@ def critical(msg: str, *args, **kwargs) -> None:
 
 def exception(msg: str, *args, **kwargs) -> None:
     logger.exception(msg, *args, **kwargs)
-
