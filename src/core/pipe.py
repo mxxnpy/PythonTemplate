@@ -6,7 +6,8 @@ Permite compor funcoes de forma fluente e legivel.
 
 from __future__ import annotations
 
-from typing import Awaitable, Callable, Generic, TypeVar
+from collections.abc import Awaitable, Callable
+from typing import Generic, TypeVar
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -95,4 +96,3 @@ def pipe(value: T) -> Pipe[T]:
 def async_pipe(value: T) -> AsyncPipe[T]:
     """cria um AsyncPipe com o valor"""
     return AsyncPipe(value)
-

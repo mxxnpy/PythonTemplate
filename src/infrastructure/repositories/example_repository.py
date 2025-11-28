@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from src.core import Either, ErrorResult, Left, Right
+from src.core import Either, ErrorResult, Right
 from src.core.option import Nothing, Option, Some
 from src.domain.entities.example import Example
 from src.domain.enums import Status
@@ -65,4 +65,3 @@ class InMemoryExampleRepository:
     def clear(self) -> None:
         """limpa dados (para testes)"""
         self._data.clear()
-

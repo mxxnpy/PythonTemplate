@@ -6,7 +6,8 @@ Encadeamento de operacoes onde qualquer falha "desvia" para a trilha de erro.
 
 from __future__ import annotations
 
-from typing import Awaitable, Callable, TypeVar
+from collections.abc import Awaitable, Callable
+from typing import TypeVar
 
 from src.core.either import Either, Left, Right
 
@@ -114,4 +115,3 @@ def ensure(
 ) -> Either[L, R]:
     """retorna Right se predicado for True, Left caso contrario"""
     return Right(value) if predicate(value) else Left(error)
-

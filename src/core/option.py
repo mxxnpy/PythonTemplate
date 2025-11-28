@@ -8,8 +8,9 @@ Representa um valor que pode ou nao existir (alternativa ao null).
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Generic, TypeVar, Union
+from typing import Generic, TypeVar
 
 from src.core.either import Either, Left, Right
 
@@ -46,7 +47,7 @@ class Nothing:
         return True
 
 
-Option = Union[Some[T], Nothing]
+Option = Some[T] | Nothing
 
 
 # cria Option a partir de valor nullable
@@ -89,4 +90,3 @@ def match_option(
     if isinstance(option, Some):
         return on_some(option.value)
     return on_none()
-

@@ -5,7 +5,7 @@ Entity Base - Classe base para entidades do dominio
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Generic, TypeVar
 from uuid import UUID, uuid4
 
@@ -23,14 +23,14 @@ class Entity(Generic[Id]):
 class AuditableEntity(Entity[Id]):
     """entidade com campos de auditoria"""
 
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime | None = None
     created_by: str | None = None
     updated_by: str | None = None
 
     def mark_updated(self, by: str | None = None) -> None:
         """marca entidade como atualizada"""
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
         self.updated_by = by
 
 
@@ -44,7 +44,7 @@ class SoftDeletableEntity(AuditableEntity[Id]):
 
     def soft_delete(self, by: str | None = None) -> None:
         """marca entidade como deletada"""
-        self.deleted_at = datetime.utcnow()
+        self.deleted_at = datetime.now(UTC)
         self.deleted_by = by
         self.is_deleted = True
 
@@ -59,4 +59,3 @@ class SoftDeletableEntity(AuditableEntity[Id]):
 def generate_uuid() -> UUID:
     """gera um novo UUID"""
     return uuid4()
-

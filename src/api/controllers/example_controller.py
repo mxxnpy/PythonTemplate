@@ -7,23 +7,21 @@ from __future__ import annotations
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import Response
 
-from src.core import Left
 from src.application.handlers.example_handler import (
     CreateExampleCommand,
-    ExampleHandler,
     GetByIdQuery,
     ListAllQuery,
     UpdateExampleCommand,
 )
 from src.application.view_models import (
     ApiResponse,
-    PaginatedResult,
     CreateExampleRequest,
-    UpdateExampleRequest,
     ExampleResponse,
+    PaginatedResult,
+    UpdateExampleRequest,
 )
+from src.core import Left
 from src.infrastructure.dependencies import ExampleHandlerDep
 
 router = APIRouter(prefix="/examples", tags=["Examples"])

@@ -2,8 +2,8 @@
 from src.application.view_models.base import ApiResponse, PaginatedResult
 from src.application.view_models.example_vm import (
     CreateExampleRequest,
-    UpdateExampleRequest,
     ExampleResponse,
+    UpdateExampleRequest,
 )
 
 __all__ = [

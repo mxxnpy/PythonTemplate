@@ -10,8 +10,9 @@ O Either representa um valor que pode ser uma de duas coisas:
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Generic, TypeVar, Union
+from typing import Generic, TypeVar
 
 L = TypeVar("L")
 R = TypeVar("R")
@@ -48,7 +49,7 @@ class Right(Generic[R]):
         return True
 
 
-Either = Union[Left[L], Right[R]]
+Either = Left[L] | Right[R]
 
 
 # trata ambos os casos e retorna um valor
@@ -74,4 +75,3 @@ def bind(either: Either[L, R], f: Callable[[R], Either[L, T]]) -> Either[L, T]:
     if isinstance(either, Right):
         return f(either.value)
     return either  # type: ignore
-

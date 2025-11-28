@@ -19,12 +19,12 @@ class ApiResponse(BaseModel, Generic[T]):
     result: T | None = Field(default=None, description="Resultado da operacao")
 
     @classmethod
-    def success(cls, result: T) -> "ApiResponse[T]":
+    def success(cls, result: T) -> ApiResponse[T]:
         """cria resposta de sucesso"""
         return cls(error=False, error_message=None, result=result)
 
     @classmethod
-    def fail(cls, message: str) -> "ApiResponse[T]":
+    def fail(cls, message: str) -> ApiResponse[T]:
         """cria resposta de erro"""
         return cls(error=True, error_message=message, result=None)
 
@@ -45,7 +45,7 @@ class PaginatedResult(BaseModel, Generic[T]):
         total: int,
         page: int,
         page_size: int,
-    ) -> "PaginatedResult[T]":
+    ) -> PaginatedResult[T]:
         total_pages = (total + page_size - 1) // page_size if page_size > 0 else 0
         return cls(
             items=items,
@@ -58,4 +58,3 @@ class PaginatedResult(BaseModel, Generic[T]):
 
 # alias para resposta paginada
 PaginatedApiResponse = ApiResponse[PaginatedResult[T]]
-

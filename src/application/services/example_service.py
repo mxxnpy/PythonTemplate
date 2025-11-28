@@ -7,12 +7,9 @@ from __future__ import annotations
 from typing import Protocol
 from uuid import UUID
 
-from src.core import Either, ErrorResult, Left, Right
-from src.core.option import Nothing, Option, Some, to_either
-from src.application.specifications.example_specs import (
-    NameNotEmptySpec,
-    ValuePositiveSpec,
-)
+from src.application.specifications.example_specs import NameNotEmptySpec
+from src.core import Either, ErrorResult, Left
+from src.core.option import Option, Some, to_either
 from src.domain.entities.example import Example
 
 
@@ -105,4 +102,3 @@ class ExampleService:
     ) -> tuple[list[Example], int]:
         """lista paginado"""
         return await self._repo.list_all(page, page_size)
-

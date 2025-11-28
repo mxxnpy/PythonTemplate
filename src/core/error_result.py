@@ -83,19 +83,19 @@ class ValidationBuilder:
 
     errors: list[str] = field(default_factory=list)
 
-    def add(self, condition: bool, msg: str) -> "ValidationBuilder":
+    def add(self, condition: bool, msg: str) -> ValidationBuilder:
         """adiciona erro se condicao for True"""
         if condition:
             self.errors.append(msg)
         return self
 
-    def add_if_empty(self, value: str | None, field_name: str) -> "ValidationBuilder":
+    def add_if_empty(self, value: str | None, field_name: str) -> ValidationBuilder:
         """adiciona erro se valor estiver vazio"""
         if not value or not value.strip():
             self.errors.append(f"{field_name} e obrigatorio")
         return self
 
-    def add_if_none(self, value: object | None, field_name: str) -> "ValidationBuilder":
+    def add_if_none(self, value: object | None, field_name: str) -> ValidationBuilder:
         """adiciona erro se valor for None"""
         if value is None:
             self.errors.append(f"{field_name} e obrigatorio")
@@ -114,4 +114,3 @@ class ValidationBuilder:
         if self.is_invalid:
             return ErrorResult.validation_list(self.errors)
         return None
-

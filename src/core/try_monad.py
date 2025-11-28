@@ -6,8 +6,9 @@ Converte codigo que lanca excecao para Either.
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Awaitable, Callable, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from src.core.either import Either, Left, Right
 from src.core.error_result import ErrorResult
@@ -92,7 +93,9 @@ def to_either(t: Try[T]) -> Either[ErrorResult, T]:
 
 
 # converte Try para Either com erro customizado
-def to_either_with(t: Try[T], on_error: Callable[[Exception], ErrorResult]) -> Either[ErrorResult, T]:
+def to_either_with(
+    t: Try[T], on_error: Callable[[Exception], ErrorResult]
+) -> Either[ErrorResult, T]:
     """converte Try para Either com funcao de erro customizada"""
     if isinstance(t, TrySuccess):
         return Right(t.value)
@@ -127,4 +130,3 @@ def recover_with(t: Try[T], f: Callable[[Exception], Try[T]]) -> Try[T]:
     if isinstance(t, TryFailure):
         return f(t.exception)
     return t
-

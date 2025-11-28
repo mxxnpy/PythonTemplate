@@ -4,13 +4,13 @@ FastAPI Application - configuracao da aplicacao
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.api.controllers import health_router, example_router
+from src.api.controllers import example_router, health_router
 from src.infrastructure.config import get_settings
 
 

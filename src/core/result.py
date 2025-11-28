@@ -6,8 +6,9 @@ Uma versao mais especifica do Either para Success/Failure.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Generic, TypeVar
+from typing import Generic, TypeVar
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -84,4 +85,3 @@ def match_result(
     if isinstance(result, Success):
         return on_success(result.value)
     return on_failure(result.error)
-

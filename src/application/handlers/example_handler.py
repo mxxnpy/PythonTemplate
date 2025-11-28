@@ -7,9 +7,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from uuid import UUID
 
-from src.core import Either, Left, Right, ErrorResult, map_right
 from src.application.services.example_service import ExampleService
 from src.application.view_models import ExampleResponse, PaginatedResult
+from src.core import Either, ErrorResult, map_right
 from src.domain.entities.example import Example
 
 
