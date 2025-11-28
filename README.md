@@ -19,9 +19,15 @@ pip install -r requirements.txt
 
 # rodar
 python main.py
+
+# ou com uvicorn direto
+uvicorn src.api.app:app --reload
 ```
 
-API disponível em `http://localhost:8000/docs`
+**URLs:**
+- API: `http://localhost:8000`
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
 
 ## 📁 Estrutura
 
